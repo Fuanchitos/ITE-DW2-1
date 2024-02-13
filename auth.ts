@@ -5,7 +5,23 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
+import GitHub from "next-auth/providers/github"
+import type { NextAuthConfig } from "next-auth"
 
+export const config = {
+  theme: {
+    logo: "https://next-auth.js.org/img/logo/logo-sm.png",
+  },
+  providers: [ GitHub,
+  ],
+  callbacks: {
+    authorized({ request, auth }) {
+      const { pathname } = request.nextUrl
+      if (pathname === "/middleware-example") return !!auth
+      return true
+    },
+  },
+} satisfies NextAuthConfig
 async function getUser(email: string): Promise<User | undefined> {
     try {
       const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
@@ -36,4 +52,6 @@ export const { auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-});
+
+}
+);
